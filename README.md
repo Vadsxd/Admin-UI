@@ -7,7 +7,7 @@ FastApi, Jinja, HTML, CSS, js, Docker
 # Launch
 + git clone https://github.com/Vadsxd/Admin-UI.git
 + cd Admin-UI
-+ fill ```env```
++ fill ```.env```
 + ```docker-compose up -d```
 
 # Swagger
