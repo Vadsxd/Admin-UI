@@ -1,0 +1,410 @@
+{% extends "base.html" %}
+
+{% block head %}
+  <title>Таблицы</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+
+  <!-- загрузим дыннне с бд -->
+  <script>
+
+    window.MAX_NUM_ROW_TABLE = 2 // максимальное количество строк в таблице
+    window.curr_page = 1 // текущая страница таблицы
+    window.flad_load_tables = false
+    window.flag_search = false
+
+    $.ajax({
+        type: "GET",
+        url: "/table/AllTables",
+        contentType : "application/json",
+        headers: {"Authorization": sessionStorage.getItem("token")},
+        
+        success: function(data) {
+              window.curr_arr_tables = data; //массив всех таблиц
+              window.flad_load_tables = true
+
+              
+        },
+        
+        error: function(request,status,errorThrown) {
+
+          $("body").html(`<h2> ${errorThrown}</h2>`);
+
+        }
+        });
+
+  </script>
+{% endblock %}
+
+
+{% block bar_item_1_style %} 
+style= "border-bottom-color: white;
+        box-sizing: border-box;
+        border-bottom-width: 4px;
+        border-bottom-style: solid;
+        padding: 24px 26px" 
+{% endblock %}
+
+
+
+{% block content %}
+
+  <div id="loading" style="margin-top: 200px;">
+    <h2 class="w3-center">Loading...</h2>
+  </div>
+  
+  
+
+
+  <div class=" w3-container w3-margin " style="visibility: hidden;"  id="search_div">
+    <div class=" w3-card-4 " style="padding-bottom: 10px; padding-top: 1px">
+    
+    <h3 class = "w3-center">Поиск</h3>
+    
+      <!------------------------------------------------ Поля поиска ----------------------------------------------------------------->
+    
+         <div class="w3-container   w3-cell w3-cell-top"  style="width: 190px; padding-right: 0px">
+           <p>Название таблицы:</p>
+           <p  style="margin-top:24px" >Ссылка:</p>
+         </div>
+         
+         <div class="w3-container   w3-cell w3-cell-top" style="width: 300px; padding-left: 0px; padding-right: 26px">
+          <input class="w3-input w3-border" style="margin-top:6px" type="text" placeholder="Введите данные" id="label_name">
+           <input class="w3-input  w3-border" style="margin-top:8px"  type="text" placeholder="Введите данные" id="label_href">
+         </div>
+         
+         <div class="w3-container   w3-cell w3-cell-top"  style="width: 210px;   padding-right: 0px">
+           <p>Дата создания (после):</p>
+           <p  style="margin-top:24px" >Дата создания (до):</p>
+         </div>
+         
+         <div class="w3-container   w3-cell w3-cell-top" style="width: 300px; padding-left: 0px">
+          <input class="w3-input w3-border" style="margin-top:6px" type="text" placeholder="Введите данные" id="label_date_after">
+           <input class="w3-input  w3-border" style="margin-top:8px"  type="text" placeholder="Введите данные" id="label_date_befor">
+         </div>
+         
+         
+
+      <!------------------------------------------------ Кнопки ----------------------------------------------------------------->
+
+        <div class="w3-container  w3-cell w3-cell-middle " style="
+     padding-left: 120px; padding-top:20px" >
+           <div class="w3-container w3-center w3-cell">
+             <button onclick="search()" class="w3-btn w3-blue w3-large" >Поиск</button></p>
+          </div>
+    
+          <div class="w3-container w3-center w3-cell" style="
+     padding-left: 50px;" >
+            <button onclick="cancel()" class="w3-btn w3-gray w3-large " >Отмена</button></p>
+          </div> 
+        </div>
+        
+         
+          
+         
+    
+    </div>
+ 
+    </div>
+
+  
+<div class=" w3-container  w3-margin"  style="visibility:hidden;" id="table_div">
+  <div class=" w3-card-4 ">
+  <div class="w3-bar">
+  
+    <div class="w3-container  w3-bar-item " >
+      <p ><b>Список таблиц</b></p>
+    </div>
+    
+   
+    
+    <div class="w3-container w3-right w3-bar-item" style="margin-top: 10px">
+       <button class="w3-btn w3-red " >Удалить</button></p>
+    </div>
+    
+    <div class="w3-container w3-right w3-bar-item" style="margin-top: 10px">
+       <button class="w3-btn w3-blue" onclick="addTable()" >Создать</button></p>
+    </div>
+  </div>
+  
+  
+  <div class=" w3-container">
+  <table class="w3-table-all"  style="margin-bottom: 25px" id="table">
+    <tr>
+      <th class="w3-center">Название таблицы</th>
+      <th>Ссылка</th>
+      <th  class="w3-center" >Дата создания</th>
+      <th  class="w3-center">Действия</th>
+    </tr>
+    
+
+      
+    </table>
+
+
+    <div class="w3-show-inline-block w3-right" style="margin-bottom: 15px">
+      <div class="w3-bar w3-border " id="pagination">
+        <!-- <a href="#" class="w3-bar-item w3-button">&laquo;</a>
+        <a href="#" class="w3-bar-item w3-button w3-blue ">1</a>
+        <a href="#" class="w3-bar-item w3-button">2</a>
+        <a href="#" class="w3-bar-item w3-button">3</a>
+        <a href="#" class="w3-bar-item w3-button">4</a>
+        <a href="#" class="w3-bar-item w3-button">&raquo;</a>-->
+      </div>
+      </div>
+
+  </div>
+  
+  
+  </div>
+  </div>
+
+<script>
+
+window.onload = ()=> {
+  
+  let intervalId = setInterval(()=> {
+    console.log('wait');
+    
+    if (window.flad_load_tables === true) {
+      
+      clearInterval(intervalId);
+      update()
+      end_load()
+    }
+  }, 1000);
+
+  
+}
+
+
+// функция, обрабатывающая нажатие кнопки добавления таблицы
+function addTable(){
+  // переход на страницу с формой для добавления новой таблицы
+  location.href = "/page/add_table";
+}
+
+
+
+function end_load() {
+  $("#search_div").css("visibility","visible");
+  $("#table_div").css("visibility","visible");
+  $("#loading").remove();
+}
+
+
+//window.onload = insert_table_html(1)
+
+//вставляет пагинацию
+function insert_pagination(){
+  pagin_html = " <button  onclick=\"left_click()\" class=\"w3-bar-item w3-button  w3-border\">&laquo;</a>"   
+
+  for(i = 1; i <= window.max_num_page; i++){
+    pagin_html += "<button  id=\"pagn_btn_"+ i + "\" onclick=\"click_pagging_btn("+i+")\" class=\"w3-bar-item w3-button \" style=\"padding: 8.8px 16px\">" + i +"</a>"
+    console.log(i)
+  }
+
+  pagin_html += " <button  onclick=\"right_click()\" class=\"w3-bar-item w3-button  w3-border\" >&raquo;</a>"
+
+  $("#pagination").html(pagin_html)
+
+  $('#pagn_btn_1').addClass('w3-blue');
+
+}
+
+//вставляем строки
+function  insert_table_html(n_page){
+  rows_html = `<tr> 
+                <th class="w3-center">Название таблицы</th>
+                <th>Ссылка</th>
+                <th  class="w3-center" >Дата создания</th>
+                <th  class="w3-center">Действия</th>
+              </tr>`
+
+  tables = window.curr_arr_tables
+  M = window.MAX_NUM_ROW_TABLE
+
+  for(i = (n_page-1) * M; i < M * n_page; i++){
+    el = tables[i]
+
+    if (i >= tables.length) {
+      //создаем пустую строку
+      rows_html +=`<tr>
+                    <td style="height: 39.3px"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                  </tr>`
+      continue;
+    }
+
+    rows_html +=  ` <tr>
+                      <td  class="w3-center" >${el.tableName}</td>
+                      <td><a href="${el.tableUrl}" style = "color: blue;">${el.tableUrl.slice(0, 70) + "..."}</a></td>
+                      <td  class="w3-center">${convert_date(el.creationDate) }</td>
+                      <td  class="w3-center"><button id=${el.id} style = "color: blue;" onclick="OpenSettings(this.id)">Настроить</button></td>
+                    </tr>`
+  
+  }
+
+  $("#table").html(rows_html)
+
+}
+
+function OpenSettings(table_id){
+  // функция, открывающая страницу с настройками 
+  location.href = '/page/setting_table/' + table_id;
+}
+
+
+
+
+function convert_date(iso_format){
+  var date = new Date(iso_format);
+  var day = date.getDate(); // Get the day
+  var month = date.getMonth() + 1; // Get the month
+  var year = date.getFullYear(); // Get the year
+
+  if (month < 10) {
+    month = '0' + month; // Add leading 0 if the month is less than 10
+  }
+
+  if (day < 10) {
+    day = '0' + day; // Add leading 0 if the day is less than 10
+  }
+
+  var formattedDate = day + "." + month + "." + year;
+
+  return formattedDate;
+}
+
+//переход по таблице в право
+function right_click() {
+  if (window.curr_page >= window.max_num_page ) return;
+
+  insert_table_html(window.curr_page + 1)
+  $('#pagn_btn_'+ window.curr_page ).removeClass('w3-blue')
+  $('#pagn_btn_'+ (window.curr_page+1)).addClass('w3-blue')
+
+  window.curr_page = window.curr_page + 1
+}
+
+//переход по таблице в право
+function left_click() {
+  if (window.curr_page <= 1) return;
+
+  insert_table_html(window.curr_page - 1)
+  $('#pagn_btn_'+ window.curr_page ).removeClass('w3-blue')
+  $('#pagn_btn_'+ (window.curr_page-1)).addClass('w3-blue')
+
+  window.curr_page = window.curr_page - 1
+}
+
+
+
+function search(){
+  var input_text = {
+    name: $('#label_name').val(),
+    href: $('#label_href').val(),
+    date_after: $('#label_date_after').val(),
+    date_befor: $('#label_date_befor').val(),
+  }
+
+
+  if (window.flag_search === false) {
+    window.copy_arr_tables =  window.curr_arr_tables.slice();
+  } else {
+    window.curr_arr_tables = window.copy_arr_tables.slice();
+  }
+  
+  let arr_func = [];
+
+  if (input_text.name != "") arr_func.push( (el) => el.tableName.toLowerCase().includes(input_text.name.toLowerCase()) );
+  if (input_text.href != "") arr_func.push( (el) => el.tableUrl.toLowerCase().includes(input_text.href.toLowerCase()) );
+  if (input_text.date_after != "") arr_func.push( (el) => is_date_rising(input_text.date_after, convert_date(el.creationDate)));
+  if (input_text.date_befor != "") arr_func.push( (el) => is_date_rising(convert_date(el.creationDate), input_text.date_befor));
+
+  window.flag_search = true;
+
+  window.curr_arr_tables =  window.curr_arr_tables.filter((el)=>{var sum = true;
+                                                                 for(i = 0; i < arr_func.length; i++){
+                                                                   sum = sum &&  arr_func[i](el) 
+                                                                 };
+                                                                 return sum});
+
+  update()
+}
+
+function is_date_rising(date1_str, date2_str){
+  let splits_1 = date1_str.split(".");
+  let splits_2 = date2_str.split(".");
+
+  let date_1 = {
+    day: parseInt(splits_1[0]),
+    month: parseInt(splits_1[1]),
+    year: parseInt(splits_1[2])
+  }
+
+  let date_2 = {
+    day: parseInt(splits_2[0]),
+    month: parseInt(splits_2[1]),
+    year: parseInt(splits_2[2])
+  }
+
+
+  if (date_1.year != date_2.year){
+    return date_2.year > date_1.year
+  } else if(date_1.month != date_2.month) {
+    return date_2.month > date_1.month
+  } else if(date_1.day != date_2.day) {
+    return date_2.day > date_1.day
+  } else return true;
+
+}
+
+
+function cancel(){
+  window.curr_arr_tables = window.copy_arr_tables.slice();
+  delete window.copy_arr_tables
+
+  window.flag_search = false;
+
+  $('#label_name').val('');
+  $('#label_href').val('');
+  $('#label_date_after').val('');
+  $('#label_date_befor').val('');
+
+  update()
+}
+
+
+function update(){
+  var max_len_list = window.curr_arr_tables.length 
+  var max_num_page = Math.floor(max_len_list / window.MAX_NUM_ROW_TABLE)
+
+  if(max_len_list % window.MAX_NUM_ROW_TABLE != 0){
+    max_num_page = max_num_page + 1
+  }
+
+  window.max_num_page = max_num_page //максимальное  количество страниц таблицы
+  insert_pagination()
+  insert_table_html(1)
+}
+
+
+function click_pagging_btn(n){
+  insert_table_html(n)
+
+
+  $('#pagn_btn_'+ window.curr_page ).removeClass('w3-blue')
+  $('#pagn_btn_'+ n).addClass('w3-blue')
+
+  window.curr_page = n
+
+}
+
+</script>
+
+  
+{% endblock %}

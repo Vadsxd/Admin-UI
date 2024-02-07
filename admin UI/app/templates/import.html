@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Импорт</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+{% endblock %}
+
+
+{% block content %}
+<div class="w3-display-middle" style="width: 30%; height: 15%">
+    <form id="fileForm">
+        <input type="file" name="fileItem" id="fileItem" required>
+        <input type="submit">
+    </form>
+    <textarea id="fileContents"></textarea>
+</div>
+<script>
+    (function () {
+        "use strict";
+        document.getElementById('fileForm').addEventListener('submit', function(e){
+            e.preventDefault();
+            let file = document.getElementById('fileItem').files[0];
+            if (file.type !== "application/json") {
+                document.getElementById('fileContents').value = "Invalid file type"+file.type;
+            } else {
+                let reader = new FileReader();
+                reader.addEventListener('load', function (e) {
+                    document.getElementById('fileContents').value = e.target.result;
+                    let jsonData = JSON.parse(e.target.result);
+
+                    let result = {};
+                    result['data'] = jsonData;
+
+                    $.ajax({
+                      type: "PUT",
+                      url: "/data/import",
+                      data: JSON.stringify(result),
+                      success: function () {
+                          location.href = "/page/import_export"
+                      },
+                      headers: {"Authorization": sessionStorage.getItem("token")},
+                      contentType: "application/json; charset=utf-8",
+                      dataType: "json",
+                    });
+                })
+                reader.readAsText(file, 'CP1251');
+            }
+        })
+    })();
+</script>
+{% endblock %}

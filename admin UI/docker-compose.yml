@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  backend:
+    container_name: tg_api
+    build: .
+    restart: unless-stopped
+    ports:
+      - ${SERVER_PORTS}
+    depends_on:
+      - mongodb
+    env_file:
+      - .env
+
+  mongodb:
+    container_name: tg_db
+    image: "mongo:7.0.4"
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DB_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_ROOT_PWD}
+    volumes:
+      - ./mongo/mongo_init.js:/docker-entrypoint-initdb.d/mongo-init.js
+      - dbdata6:/data/db
+          
+volumes:
+  dbdata6:
