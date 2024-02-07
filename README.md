@@ -2,7 +2,7 @@
 UI for info editing users, tables and watching logs.
 
 # Stack
-FastApi, Jinja, HTML, CSS, js, Docker
+FastApi, Jinja, HTML, CSS, js, Docker, Swagger 3
 
 # Launch
 + git clone https://github.com/Vadsxd/Admin-UI.git
